@@ -70,7 +70,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function CheckoutHome(props) {
+function CheckoutHome({ authUser }) {
   const classes = useStyles();
   const open = true;
   const orderRepository = new OrderRepository();
@@ -84,7 +84,7 @@ function CheckoutHome(props) {
           [classes.contentShift]: open,
         })}
       >
-        <Checkout orderRepository={orderRepository} />
+        {authUser ? <Checkout orderRepository={orderRepository} /> : null}
       </main>
     </div>
   );

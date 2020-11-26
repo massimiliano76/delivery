@@ -12,7 +12,9 @@ import * as serviceWorker from "./serviceWorker";
 import { Button } from "@material-ui/core";
 import * as ROUTES from "./constants/routes";
 import SignUpPage from "./components/SignUp";
-// import SignInPage from "./components/SignUp";
+import SignInPage from "./components/SignIn";
+import SignOutButton from "./components/SignOut";
+import { withFirebase } from "./components/Firebase";
 
 function App(props) {
   const { language } = props;
@@ -25,6 +27,18 @@ function App(props) {
     newVersionAvailable: false,
     waitingWorker: {},
   });
+
+  const [authUser, setAuthUser] = useState(null);
+  useEffect(() => {
+    const listener = props.firebase.auth.onAuthStateChanged((authUser) => {
+      authUser ? setAuthUser(authUser) : setAuthUser(null);
+    });
+
+    // returned function will be called on component unmount
+    return () => {
+      listener();
+    };
+  }, [props.firebase.auth]);
 
   useEffect(() => {
     const onServiceWorkerUpdate = (registration) => {
@@ -74,27 +88,35 @@ function App(props) {
     }
   }, [newVersionAvailableAndWorker, enqueueSnackbar]);
 
+  const CheckoutHomeWithAuthUser = () => <CheckoutHome authUser={authUser} />;
+
   return (
     <I18nProvider language={language} catalogs={{ [language]: localeMessage }}>
       <CssBaseline />
 
       <Switch>
-        <Route exact path={["/", "/checkout"]} component={CheckoutHome} />
+        <Route
+          exact
+          path={["/", "/checkout"]}
+          component={CheckoutHomeWithAuthUser}
+        />
         <Route exact path="/products" component={Products} />
         <Route exact path="/products/add" component={EditOrAddProduct} />
         <Route path="/products/:id" component={EditOrAddProduct} />
 
         <Route path={ROUTES.SIGN_UP} component={SignUpPage} />
-        {/* <Route path={ROUTES.SIGN_IN} component={SignInPage} />
-        <Route path={ROUTES.PASSWORD_FORGET} component={PasswordForgetPage} />
+        <Route path={ROUTES.SIGN_IN} component={SignInPage} />
+        {/*<Route path={ROUTES.PASSWORD_FORGET} component={PasswordForgetPage} />
         <Route path={ROUTES.HOME} component={HomePage} />
         <Route path={ROUTES.ACCOUNT} component={AccountPage} />
         <Route path={ROUTES.ADMIN} component={AdminPage} /> */}
       </Switch>
+
+      <SignOutButton />
 
       <NotificationContainer />
     </I18nProvider>
   );
 }
 
-export default App;
+export default withFirebase(App);
