@@ -5,6 +5,7 @@ import clsx from "clsx";
 import { makeStyles } from "@material-ui/core/styles";
 import OrderQueue from "./OrderQueue";
 import OrderRepository from "./repository/OrderRepository";
+import { AuthUserContext } from "./components/Session";
 
 const drawerWidth = 380;
 
@@ -70,7 +71,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function CheckoutHome({ authUser }) {
+function CheckoutHome() {
   const classes = useStyles();
   const open = true;
   const orderRepository = new OrderRepository();
@@ -84,7 +85,11 @@ function CheckoutHome({ authUser }) {
           [classes.contentShift]: open,
         })}
       >
-        {authUser ? <Checkout orderRepository={orderRepository} /> : null}
+        <AuthUserContext.Consumer>
+          {(authUser) =>
+            authUser ? <Checkout orderRepository={orderRepository} /> : null
+          }
+        </AuthUserContext.Consumer>
       </main>
     </div>
   );

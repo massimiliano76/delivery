@@ -14,7 +14,8 @@ import * as ROUTES from "./constants/routes";
 import SignUpPage from "./components/SignUp";
 import SignInPage from "./components/SignIn";
 import SignOutButton from "./components/SignOut";
-import { withFirebase } from "./components/Firebase";
+import { withAuthentication } from "./components/Session";
+import { AuthUserContext } from "../Session";
 
 function App(props) {
   const { language } = props;
@@ -27,18 +28,6 @@ function App(props) {
     newVersionAvailable: false,
     waitingWorker: {},
   });
-
-  const [authUser, setAuthUser] = useState(null);
-  useEffect(() => {
-    const listener = props.firebase.auth.onAuthStateChanged((authUser) => {
-      authUser ? setAuthUser(authUser) : setAuthUser(null);
-    });
-
-    // returned function will be called on component unmount
-    return () => {
-      listener();
-    };
-  }, [props.firebase.auth]);
 
   useEffect(() => {
     const onServiceWorkerUpdate = (registration) => {
@@ -88,18 +77,12 @@ function App(props) {
     }
   }, [newVersionAvailableAndWorker, enqueueSnackbar]);
 
-  const CheckoutHomeWithAuthUser = () => <CheckoutHome authUser={authUser} />;
-
   return (
     <I18nProvider language={language} catalogs={{ [language]: localeMessage }}>
       <CssBaseline />
 
       <Switch>
-        <Route
-          exact
-          path={["/", "/checkout"]}
-          component={CheckoutHomeWithAuthUser}
-        />
+        <Route exact path={["/", "/checkout"]} component={CheckoutHome} />
         <Route exact path="/products" component={Products} />
         <Route exact path="/products/add" component={EditOrAddProduct} />
         <Route path="/products/:id" component={EditOrAddProduct} />
@@ -119,4 +102,4 @@ function App(props) {
   );
 }
 
-export default withFirebase(App);
+export default withAuthentication(App);
