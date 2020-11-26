@@ -6,12 +6,15 @@ import { Provider } from "react-redux";
 import store from "./redux/store";
 import App from "./App";
 import { SnackbarProvider } from "notistack";
+import Firebase, { FirebaseContext } from "./components/Firebase";
 
 ReactDOM.render(
   <Router>
     <Provider store={store}>
       <SnackbarProvider>
-        <App language="pt-BR" />
+        <FirebaseContext.Provider value={new Firebase()}>
+          <App language="pt-BR" />
+        </FirebaseContext.Provider>
       </SnackbarProvider>
     </Provider>
   </Router>,

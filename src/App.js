@@ -10,6 +10,9 @@ import EditOrAddProduct from "./components/products/EditOrAddProduct";
 import { useSnackbar } from "notistack";
 import * as serviceWorker from "./serviceWorker";
 import { Button } from "@material-ui/core";
+import * as ROUTES from "./constants/routes";
+import SignUpPage from "./components/SignUp";
+// import SignInPage from "./components/SignUp";
 
 function App(props) {
   const { language } = props;
@@ -80,6 +83,13 @@ function App(props) {
         <Route exact path="/products" component={Products} />
         <Route exact path="/products/add" component={EditOrAddProduct} />
         <Route path="/products/:id" component={EditOrAddProduct} />
+
+        <Route path={ROUTES.SIGN_UP} component={SignUpPage} />
+        {/* <Route path={ROUTES.SIGN_IN} component={SignInPage} />
+        <Route path={ROUTES.PASSWORD_FORGET} component={PasswordForgetPage} />
+        <Route path={ROUTES.HOME} component={HomePage} />
+        <Route path={ROUTES.ACCOUNT} component={AccountPage} />
+        <Route path={ROUTES.ADMIN} component={AdminPage} /> */}
       </Switch>
 
       <NotificationContainer />
