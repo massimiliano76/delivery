@@ -5,7 +5,6 @@ import clsx from "clsx";
 import { makeStyles } from "@material-ui/core/styles";
 import OrderQueue from "./OrderQueue";
 import OrderRepository from "./repository/OrderRepository";
-import { AuthUserContext } from "./components/Session";
 
 const drawerWidth = 380;
 
@@ -85,11 +84,7 @@ function CheckoutHome() {
           [classes.contentShift]: open,
         })}
       >
-        <AuthUserContext.Consumer>
-          {(authUser) =>
-            authUser ? <Checkout orderRepository={orderRepository} /> : null
-          }
-        </AuthUserContext.Consumer>
+        <Checkout orderRepository={orderRepository} />
       </main>
     </div>
   );

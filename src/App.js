@@ -13,7 +13,6 @@ import { Button } from "@material-ui/core";
 import * as ROUTES from "./constants/routes";
 import SignUpPage from "./components/SignUp";
 import SignInPage from "./components/SignIn";
-import { withAuthentication } from "./components/Session";
 import PasswordForgetPage from "./components/PasswordForget";
 import AccountPage from "./components/Account";
 
@@ -98,4 +97,4 @@ function App(props) {
   );
 }
 
-export default withAuthentication(App);
+export default App;
