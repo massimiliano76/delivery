@@ -1,10 +1,14 @@
-import React from "react";
+import React, { useContext } from "react";
 import Checkout from "./Checkout";
 import "react-notifications/lib/notifications.css";
 import clsx from "clsx";
 import { makeStyles } from "@material-ui/core/styles";
 import OrderQueue from "./OrderQueue";
 import OrderRepository from "./repository/OrderRepository";
+import { withFirebase } from "./components/Firebase";
+import NetworkLockedIcon from "@material-ui/icons/NetworkLocked";
+import { AuthUserContext } from "./components/Session";
+import { Box } from "@material-ui/core";
 
 const drawerWidth = 380;
 
@@ -68,15 +72,38 @@ const useStyles = makeStyles((theme) => ({
   badgePadding: {
     padding: theme.spacing(0, 2),
   },
+  marginFloatButton: {
+    position: "fixed",
+    bottom: theme.spacing(2),
+    right: theme.spacing(2),
+  },
 }));
 
-function CheckoutHome() {
+function CheckoutHome({ firebase }) {
   const classes = useStyles();
   const open = true;
-  const orderRepository = new OrderRepository();
+  const authUser = useContext(AuthUserContext);
+  const orderRepository = OrderRepository.OrderRepositoryFirebase(
+    firebase,
+    authUser
+  );
+
+  const connectedSymbol = () => {
+    return (
+      <Box zIndex="tooltip">
+        <NetworkLockedIcon
+          size="small"
+          style={{ color: "green" }}
+          className={classes.marginFloatButton}
+        />
+      </Box>
+    );
+  };
 
   return (
     <div className={classes.root}>
+      {authUser ? connectedSymbol() : null}
+
       <OrderQueue orderRepository={orderRepository} />
 
       <main
@@ -90,4 +117,4 @@ function CheckoutHome() {
   );
 }
 
-export default CheckoutHome;
+export default withFirebase(CheckoutHome);

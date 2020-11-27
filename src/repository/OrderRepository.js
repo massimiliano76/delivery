@@ -1,8 +1,14 @@
 import DbFactory from "./DbFactory";
 
-export default class OrderRepository {
-  constructor(db = DbFactory.dbAdapter()) {
+class OrderRepository {
+  static OrderRepositoryFirebase(firebase, authUser) {
+    return new OrderRepository(DbFactory.dbAdapter(), firebase, authUser);
+  }
+
+  constructor(db = DbFactory.dbAdapter(), firebase, authUser) {
     this.db = db;
+    this.firebase = firebase;
+    this.authUser = authUser;
     this.order_collection = db.defaults({ orders: [] }).get("orders");
     this.client_last_order_collection = db
       .defaults({ client_last_orders: [] })
@@ -59,9 +65,15 @@ export default class OrderRepository {
 
     order.id = DbFactory.getNewId();
     order.created = new Date().toJSON();
-    this.order_collection.push(order).write();
 
+    if (this.authUser) {
+      order.uid = this.authUser.uid;
+      this.firebase.order(order.id).set(order);
+    }
+
+    this.order_collection.push(order).write();
     this._saveClientLastOrder(order);
+
     return order.id;
   }
 
@@ -189,3 +201,5 @@ export default class OrderRepository {
       .value().length;
   }
 }
+
+export default OrderRepository;

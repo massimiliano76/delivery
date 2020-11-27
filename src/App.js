@@ -15,6 +15,7 @@ import SignUpPage from "./components/SignUp";
 import SignInPage from "./components/SignIn";
 import PasswordForgetPage from "./components/PasswordForget";
 import AccountPage from "./components/Account";
+import { withAuthentication } from "./components/Session";
 
 function App(props) {
   const { language } = props;
@@ -97,4 +98,4 @@ function App(props) {
   );
 }
 
-export default App;
+export default withAuthentication(App);

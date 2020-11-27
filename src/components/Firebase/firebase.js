@@ -33,8 +33,11 @@ class Firebase {
 
   // *** User API ***
   user = (uid) => this.db.ref(`users/${uid}`);
-
   users = () => this.db.ref("users");
+
+  // *** Order
+  order = (uid) => this.db.ref(`orders/${uid}`);
+  orders = () => this.db.ref("orders");
 }
 
 export default Firebase;
