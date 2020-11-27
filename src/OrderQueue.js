@@ -479,7 +479,7 @@ class OrderQueue extends Component {
           </Drawer>
         </Hidden>
         <Hidden mdUp>
-          <Box zIndex="tooltip">
+          <Box zIndex="modal">
             <Fab
               size="small"
               color="primary"
