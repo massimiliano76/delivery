@@ -149,10 +149,7 @@ class OrderRepository {
       )
       .write();
 
-    return (
-      last_orders_by_address_and_phonenumber &&
-      last_orders_by_address_and_phonenumber.length > 0
-    );
+    return last_orders_by_address_and_phonenumber || [];
   }
 
   _saveExistentLastOrderWithEmptyPhoneNumberPrevious(order) {
@@ -171,28 +168,34 @@ class OrderRepository {
       )
       .write();
 
-    return (
-      last_orders_by_address_and_empty_phonenumber &&
-      last_orders_by_address_and_empty_phonenumber.length > 0
-    );
+    return last_orders_by_address_and_empty_phonenumber || [];
   }
 
   _saveClientLastOrder(order) {
-    if (
-      !this._saveExistentLastOrderWithAllFields(order) &&
-      !this._saveExistentLastOrderWithEmptyPhoneNumberPrevious(order)
-    ) {
-      this.client_last_order_collection
-        .push({
-          id: DbFactory.getNewId(),
-          last_order_id: order.id,
-          address: order.address,
-          phonenumber: order.phonenumber,
-          complement: order.complement,
-          created: new Date().toJSON(),
-        })
-        .write();
+    const lastOrderAllFieldsRegisters = this._saveExistentLastOrderWithAllFields(
+      order
+    );
+    if (lastOrderAllFieldsRegisters.length) {
+      return lastOrderAllFieldsRegisters;
     }
+
+    const lastOrderWithEmptyPhoneNumberRegisters = this._saveExistentLastOrderWithEmptyPhoneNumberPrevious(
+      order
+    );
+    if (lastOrderWithEmptyPhoneNumberRegisters.length) {
+      return lastOrderWithEmptyPhoneNumberRegisters;
+    }
+
+    const newLastOrder = {
+      id: DbFactory.getNewId(),
+      last_order_id: order.id,
+      address: order.address,
+      phonenumber: order.phonenumber,
+      complement: order.complement,
+      created: new Date().toJSON(),
+    };
+    this.client_last_order_collection.push(newLastOrder).write();
+    return [newLastOrder];
   }
 
   allInTheQueue(page = 1, pageSize = 25) {
