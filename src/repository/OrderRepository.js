@@ -65,10 +65,7 @@ class OrderRepository {
     order.uid = this.authUser.uid;
     order.last_sync = date_last_sync;
 
-    var newOrderRef = this.firebase.orders().push();
-    order.id = newOrderRef.key;
-
-    newOrderRef.set(order);
+    this.firebase.order(order.id).set(order);
     return order;
   }
 
@@ -94,6 +91,7 @@ class OrderRepository {
     let orderByIdBuilder = this.order_collection.getById(orderId);
     let buildUpdateStatus = orderByIdBuilder
       .set(field, current_date)
+      .set("updated", current_date)
       .set("status", status);
 
     buildUpdateStatus.write();
@@ -102,12 +100,14 @@ class OrderRepository {
       const orderLocal = orderByIdBuilder.value();
       orderLocal.status = status;
       orderLocal[field] = current_date;
+      orderLocal.updated = current_date;
 
       if (orderLocal.uid) {
         this.firebase.order(orderId).update({
           [field]: current_date,
-          status: status,
           last_sync: current_date,
+          updated: current_date,
+          status: status,
           uid: this.authUser.uid,
         });
 

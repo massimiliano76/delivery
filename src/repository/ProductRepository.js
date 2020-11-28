@@ -3,13 +3,20 @@ import DbFactory from "./DbFactory";
 const entity = "products";
 
 class ProductRepository {
-  constructor(db = DbFactory.dbAdapter()) {
+  constructor(db = DbFactory.dbAdapter(), firebase, authUser) {
     this.db = db;
-    this.product_collection = db.get("products");
+    this.product_collection = db.get(entity);
+    this.firebase = firebase;
+    this.authUser = authUser;
+  }
+
+  setOrderRepositoryFirebase(firebase, authUser) {
+    this.firebase = firebase;
+    this.authUser = authUser;
   }
 
   all() {
-    return this.db.get(entity).sortBy("description").value();
+    return this.product_collection.sortBy("description").value();
   }
 
   getById(productId) {
