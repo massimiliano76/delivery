@@ -8,6 +8,7 @@ import { withFirebase } from "./components/Firebase";
 import NetworkLockedIcon from "@material-ui/icons/NetworkLocked";
 import { AuthUserContext } from "./components/Session";
 import { Box } from "@material-ui/core";
+import OrderRepository from "./repository/OrderRepository";
 
 const drawerWidth = 380;
 
@@ -82,10 +83,7 @@ function CheckoutHome({ firebase }) {
   const classes = useStyles();
   const open = true;
   const authUser = useContext(AuthUserContext);
-  // const orderRepository = OrderRepository.OrderRepositoryFirebase(
-  //   firebase,
-  //   authUser
-  // );
+  OrderRepository.setOrderRepositoryFirebase(firebase, authUser);
 
   const connectedSymbol = () => {
     return (

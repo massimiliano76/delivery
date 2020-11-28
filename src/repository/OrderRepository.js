@@ -1,10 +1,6 @@
 import DbFactory from "./DbFactory";
 
 class OrderRepository {
-  static OrderRepositoryFirebase(firebase, authUser) {
-    return new OrderRepository(DbFactory.dbAdapter(), firebase, authUser);
-  }
-
   constructor(db = DbFactory.dbAdapter(), firebase, authUser) {
     this.db = db;
     this.firebase = firebase;
@@ -13,6 +9,11 @@ class OrderRepository {
     this.client_last_order_collection = db
       .defaults({ client_last_orders: [] })
       .get("client_last_orders");
+  }
+
+  setOrderRepositoryFirebase(firebase, authUser) {
+    this.firebase = firebase;
+    this.authUser = authUser;
   }
 
   searchByAddress(address, takeCount = 5) {
@@ -82,41 +83,34 @@ class OrderRepository {
     return order.id;
   }
 
-  markAsShipped(orderId) {
+  _markStatusAs(orderId, field, status) {
     const current_date = new Date().toJSON();
-    const shipped = "SHIPPED";
 
     this.order_collection
       .getById(orderId)
-      .set("shipped_date", current_date)
-      .set("status", shipped)
+      .set(field, current_date)
+      .set("status", status)
       .write();
 
     if (this.authUser) {
       this.firebase.order(orderId).update({
-        shipped_date: current_date,
-        status: shipped,
+        [field]: current_date,
+        status: status,
+        last_sync: current_date,
       });
-      // this.firebase
-      //   .order(orderId)
-      //   .update(this.order_collection.getById(orderId).value());
     }
   }
 
+  markAsShipped(orderId) {
+    this._markStatusAs(orderId, "shipped_date", "SHIPPED");
+  }
+
   markAsCanceled(orderId) {
-    this.order_collection
-      .getById(orderId)
-      .set("canceled_date", new Date().toJSON())
-      .set("status", "CANCELED")
-      .write();
+    this._markStatusAs(orderId, "canceled_date", "CANCELED");
   }
 
   markAsDeliverid(orderId) {
-    this.order_collection
-      .getById(orderId)
-      .set("delivered_date", new Date().toJSON())
-      .set("status", "DELIVERED")
-      .write();
+    this._markStatusAs(orderId, "delivered_date", "DELIVERED");
   }
 
   _saveExistentLastOrderWithAllFields(order) {
