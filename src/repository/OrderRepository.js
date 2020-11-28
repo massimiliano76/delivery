@@ -62,10 +62,21 @@ class OrderRepository {
   }
 
   _saveNewOrderOnFireBase(order, date_last_sync) {
+    if (!this.authUser) {
+      return order;
+    }
+
     order.uid = this.authUser.uid;
     order.last_sync = date_last_sync;
 
-    this.firebase.order(order.id).set(order);
+    this.firebase
+      .order(order.id)
+      .set(order)
+      .catch(() => {
+        delete order.uid;
+        delete order.last_sync;
+      });
+
     return order;
   }
 
@@ -75,9 +86,7 @@ class OrderRepository {
     order.id = DbFactory.getNewId();
     order.created = new Date().toJSON();
 
-    if (this.authUser) {
-      order = this._saveNewOrderOnFireBase(order, order.created);
-    }
+    order = this._saveNewOrderOnFireBase(order, order.created);
 
     this.order_collection.push(order).write();
     this._saveClientLastOrder(order);
@@ -103,18 +112,21 @@ class OrderRepository {
       orderLocal.updated = current_date;
 
       if (orderLocal.uid) {
-        this.firebase.order(orderId).update({
-          [field]: current_date,
-          last_sync: current_date,
-          updated: current_date,
-          status: status,
-          uid: this.authUser.uid,
-        });
-
-        buildUpdateStatus = buildUpdateStatus
-          .set("last_sync", current_date)
-          .set("uid", this.authUser.uid);
-        buildUpdateStatus.write();
+        this.firebase
+          .order(orderId)
+          .update({
+            [field]: current_date,
+            last_sync: current_date,
+            updated: current_date,
+            status: status,
+            uid: this.authUser.uid,
+          })
+          .then(() => {
+            buildUpdateStatus = buildUpdateStatus
+              .set("last_sync", current_date)
+              .set("uid", this.authUser.uid);
+            buildUpdateStatus.write();
+          });
       } else {
         const orderSync = this._saveNewOrderOnFireBase(
           orderLocal,
