@@ -68,7 +68,12 @@ class OrderRepository {
 
     if (this.authUser) {
       order.uid = this.authUser.uid;
-      this.firebase.order(order.id).set(order);
+      order.last_sync = order.created;
+
+      var newOrderRef = this.firebase.orders().push();
+      order.id = newOrderRef.key;
+
+      newOrderRef.set(order);
     }
 
     this.order_collection.push(order).write();
@@ -78,11 +83,24 @@ class OrderRepository {
   }
 
   markAsShipped(orderId) {
+    const current_date = new Date().toJSON();
+    const shipped = "SHIPPED";
+
     this.order_collection
       .getById(orderId)
-      .set("shipped_date", new Date().toJSON())
-      .set("status", "SHIPPED")
+      .set("shipped_date", current_date)
+      .set("status", shipped)
       .write();
+
+    if (this.authUser) {
+      this.firebase.order(orderId).update({
+        shipped_date: current_date,
+        status: shipped,
+      });
+      // this.firebase
+      //   .order(orderId)
+      //   .update(this.order_collection.getById(orderId).value());
+    }
   }
 
   markAsCanceled(orderId) {
@@ -202,4 +220,4 @@ class OrderRepository {
   }
 }
 
-export default OrderRepository;
+export default new OrderRepository();

@@ -4,18 +4,21 @@ import DbFactory from "./DbFactory";
 describe("OrderRepository", () => {
   let orderRepository, dbTest, entity, entityClientLastOrder;
   beforeEach(() => {
-    dbTest = DbFactory.dbAdapter();
-    dbTest.defaults({ orders: [], client_last_orders: [] }).write();
-
     entity = "orders";
     entityClientLastOrder = "client_last_orders";
 
-    orderRepository = new OrderRepository(dbTest);
+    dbTest = DbFactory.dbAdapter();
+    dbTest.defaults({ orders: [], client_last_orders: [] }).write();
+    dbTest.set(entity, []).write();
+    dbTest.set(entityClientLastOrder, []).write();
+
+    // orderRepository = new OrderRepository(dbTest);
+    orderRepository = OrderRepository;
   });
 
   describe("save order", () => {
     it("should save order", () => {
-      orderRepository.save({ address: "101 St." });
+      OrderRepository.save({ address: "101 St." });
 
       expect(dbTest.get(entity).size().value()).to.be.equal(1);
     });
@@ -167,8 +170,16 @@ describe("OrderRepository", () => {
       });
 
       it("should update last order if address exist with empty phonenumber", () => {
-        orderRepository.save({ phonenumber: "", address: "1022 St.", notes: "order 1" });
-        orderRepository.save({ phonenumber: "99887766", address: "1022 St.", notes: "order 2" });
+        orderRepository.save({
+          phonenumber: "",
+          address: "1022 St.",
+          notes: "order 1",
+        });
+        orderRepository.save({
+          phonenumber: "99887766",
+          address: "1022 St.",
+          notes: "order 2",
+        });
 
         const clientLastOrder = dbTest
           .get(entityClientLastOrder)

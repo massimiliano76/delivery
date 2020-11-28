@@ -4,7 +4,6 @@ import "react-notifications/lib/notifications.css";
 import clsx from "clsx";
 import { makeStyles } from "@material-ui/core/styles";
 import OrderQueue from "./OrderQueue";
-import OrderRepository from "./repository/OrderRepository";
 import { withFirebase } from "./components/Firebase";
 import NetworkLockedIcon from "@material-ui/icons/NetworkLocked";
 import { AuthUserContext } from "./components/Session";
@@ -83,10 +82,10 @@ function CheckoutHome({ firebase }) {
   const classes = useStyles();
   const open = true;
   const authUser = useContext(AuthUserContext);
-  const orderRepository = OrderRepository.OrderRepositoryFirebase(
-    firebase,
-    authUser
-  );
+  // const orderRepository = OrderRepository.OrderRepositoryFirebase(
+  //   firebase,
+  //   authUser
+  // );
 
   const connectedSymbol = () => {
     return (
@@ -104,14 +103,14 @@ function CheckoutHome({ firebase }) {
     <div className={classes.root}>
       {authUser ? connectedSymbol() : null}
 
-      <OrderQueue orderRepository={orderRepository} />
+      <OrderQueue />
 
       <main
         className={clsx(classes.content, {
           [classes.contentShift]: open,
         })}
       >
-        <Checkout orderRepository={orderRepository} />
+        <Checkout />
       </main>
     </div>
   );

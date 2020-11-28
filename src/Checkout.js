@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import PropTypes from "prop-types";
 import { Input, Row, Icon, Button, Card, Modal, Col } from "react-materialize";
 import Cart from "./Cart";
 import {
@@ -7,21 +6,13 @@ import {
   getValueFormatted,
 } from "./utilities/ComponentUtils";
 import AutocompleteCustom from "./components/AutocompleteCustom";
-import OrderRepository from "./repository/OrderRepository";
 import { Trans } from "@lingui/react";
 import { NotificationManager } from "react-notifications";
+import OrderRepository from "./repository/OrderRepository";
 // import { connect } from "react-redux";
 // import { addTodo } from "./redux/actions";
 
 class Checkout extends Component {
-  static propTypes = {
-    orderRepository: PropTypes.any.isRequired,
-  };
-
-  static defaultProps = {
-    orderRepository: new OrderRepository(),
-  };
-
   constructor(props) {
     super(props);
     this.state = this.getInitialState();
@@ -142,7 +133,7 @@ class Checkout extends Component {
       change_difference,
     };
 
-    this.props.orderRepository.save(order);
+    OrderRepository.save(order);
     // this.props.addTodo(order);
   };
 
@@ -202,7 +193,7 @@ class Checkout extends Component {
   };
 
   lazyAddressSearch = (address) => {
-    return this.props.orderRepository.searchByAddress(address);
+    return OrderRepository.searchByAddress(address);
   };
 
   lazyPhoneSearch = (phonenumber) => {
@@ -213,7 +204,7 @@ class Checkout extends Component {
     const phone_only_digits = phonenumber
       .replace(/^\D+/g, "")
       .replace(/\s/g, "");
-    return this.props.orderRepository.searchByPhone(phone_only_digits);
+    return OrderRepository.searchByPhone(phone_only_digits);
   };
 
   handleOnAutocompleteLastOrderSearch = (order) => {

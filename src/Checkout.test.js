@@ -29,17 +29,15 @@ describe("Checkout place order", () => {
     sandbox = sinon.createSandbox();
 
     stubOrderRespositorySearchByAddress = sandbox
-      .stub(OrderRepository.prototype, "searchByAddress")
+      .stub(OrderRepository, "searchByAddress")
       .returns({});
-    stubSearchByPhone = sandbox
-      .stub(OrderRepository.prototype, "searchByPhone")
-      .returns({
-        phonenumber: "9988",
-        complement: "101 room",
-        notes: "Fast delivery",
-      });
+    stubSearchByPhone = sandbox.stub(OrderRepository, "searchByPhone").returns({
+      phonenumber: "9988",
+      complement: "101 room",
+      notes: "Fast delivery",
+    });
 
-    stubOrderRespositorySave = sandbox.stub(OrderRepository.prototype, "save");
+    stubOrderRespositorySave = sandbox.stub(OrderRepository, "save");
 
     wrapper = shallow(<Checkout />);
     componentRender = wrapper.instance();
