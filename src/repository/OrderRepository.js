@@ -86,11 +86,10 @@ class OrderRepository {
   _markStatusAs(orderId, field, status) {
     const current_date = new Date().toJSON();
 
-    this.order_collection
+    let buildUpdateStatus = this.order_collection
       .getById(orderId)
       .set(field, current_date)
-      .set("status", status)
-      .write();
+      .set("status", status);
 
     if (this.authUser) {
       this.firebase.order(orderId).update({
@@ -98,7 +97,11 @@ class OrderRepository {
         status: status,
         last_sync: current_date,
       });
+
+      buildUpdateStatus = buildUpdateStatus.set("last_sync", current_date);
     }
+
+    buildUpdateStatus.write();
   }
 
   markAsShipped(orderId) {
