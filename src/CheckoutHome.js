@@ -90,7 +90,7 @@ function CheckoutHome({ firebase }) {
       <Box zIndex="tooltip">
         <NetworkLockedIcon
           size="small"
-          style={{ color: "green" }}
+          style={{ color: `${authUser ? "green" : "gray"}` }}
           className={classes.marginFloatButton}
         />
       </Box>
@@ -99,7 +99,7 @@ function CheckoutHome({ firebase }) {
 
   return (
     <div className={classes.root}>
-      {authUser ? connectedSymbol() : null}
+      {connectedSymbol()}
 
       <OrderQueue />
 

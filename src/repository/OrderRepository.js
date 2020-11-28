@@ -61,6 +61,17 @@ class OrderRepository {
     return orders;
   }
 
+  _saveNewOrderOnFireBase(order, date_last_sync) {
+    order.uid = this.authUser.uid;
+    order.last_sync = date_last_sync;
+
+    var newOrderRef = this.firebase.orders().push();
+    order.id = newOrderRef.key;
+
+    newOrderRef.set(order);
+    return order;
+  }
+
   save(order) {
     if (!order) return;
 
@@ -68,13 +79,7 @@ class OrderRepository {
     order.created = new Date().toJSON();
 
     if (this.authUser) {
-      order.uid = this.authUser.uid;
-      order.last_sync = order.created;
-
-      var newOrderRef = this.firebase.orders().push();
-      order.id = newOrderRef.key;
-
-      newOrderRef.set(order);
+      order = this._saveNewOrderOnFireBase(order, order.created);
     }
 
     this.order_collection.push(order).write();
@@ -86,22 +91,38 @@ class OrderRepository {
   _markStatusAs(orderId, field, status) {
     const current_date = new Date().toJSON();
 
-    let buildUpdateStatus = this.order_collection
-      .getById(orderId)
+    let orderByIdBuilder = this.order_collection.getById(orderId);
+    let buildUpdateStatus = orderByIdBuilder
       .set(field, current_date)
       .set("status", status);
 
-    if (this.authUser) {
-      this.firebase.order(orderId).update({
-        [field]: current_date,
-        status: status,
-        last_sync: current_date,
-      });
-
-      buildUpdateStatus = buildUpdateStatus.set("last_sync", current_date);
-    }
-
     buildUpdateStatus.write();
+
+    if (this.authUser) {
+      const orderLocal = orderByIdBuilder.value();
+      orderLocal.status = status;
+      orderLocal[field] = current_date;
+
+      if (orderLocal.uid) {
+        this.firebase.order(orderId).update({
+          [field]: current_date,
+          status: status,
+          last_sync: current_date,
+          uid: this.authUser.uid,
+        });
+
+        buildUpdateStatus = buildUpdateStatus
+          .set("last_sync", current_date)
+          .set("uid", this.authUser.uid);
+        buildUpdateStatus.write();
+      } else {
+        const orderSync = this._saveNewOrderOnFireBase(
+          orderLocal,
+          current_date
+        );
+        orderByIdBuilder.assign(orderSync).write();
+      }
+    }
   }
 
   markAsShipped(orderId) {

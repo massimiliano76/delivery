@@ -22,13 +22,13 @@ class ProductRepository {
 
     product.updated = new Date().toJSON();
 
-    if (!product.id) {
+    if (product.id) {
+      this.product_collection.getById(product.id).assign(product).write();
+    } else {
       product.id = DbFactory.getNewId();
       product.created = new Date().toJSON();
 
       this.product_collection.push(product).write();
-    } else {
-      this.product_collection.getById(product.id).assign(product).write();
     }
 
     return product.id;
