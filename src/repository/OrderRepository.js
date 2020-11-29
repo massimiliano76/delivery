@@ -93,14 +93,20 @@ class OrderRepository {
       .write();
   }
 
+  _updateOrder(order) {
+    this.order_collection.getById(order.id).assign(order).write();
+  }
+
   save(order) {
     if (!order) return;
 
     order.id = DbFactory.getNewId();
     order.created = new Date().toJSON();
-    // refactor to avoid return object and use callback
-    order = this._saveEntityOnFireBase(ORDERS, order, order.created);
     this.order_collection.push(order).write();
+
+    this._saveEntityOnFireBase(ORDERS, order, order.created, (newEntity) =>
+      this._updateOrder(newEntity)
+    );
 
     const client_last_orders = this._saveClientLastOrder(order);
     client_last_orders.forEach((last_order_index) => {
