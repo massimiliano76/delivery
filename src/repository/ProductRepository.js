@@ -52,9 +52,9 @@ class ProductRepository {
   save(product) {
     if (!product) return;
     const current_date = new Date().toJSON();
+    product.updated = current_date;
 
     if (product.id) {
-      product.updated = current_date;
       this._updateProduct(product);
     } else {
       product.id = DbFactory.getNewId();
@@ -80,6 +80,7 @@ class ProductRepository {
           .then(() =>
             this.product_collection.remove({ id: productId }).write()
           );
+        //return promise to ui decide what to do if success/error
       }
     } else {
       this.product_collection.remove({ id: productId }).write();

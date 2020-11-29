@@ -1,3 +1,5 @@
+import Migration_v1 from "./migrations/Migration_v1";
+
 const low = require("lowdb");
 const Memory = require("lowdb/adapters/Memory");
 const LocalStorage = require("lowdb/adapters/LocalStorage");
@@ -15,37 +17,25 @@ if (process.env.NODE_ENV === "test") {
   ProdOrDevDatabase = new LocalStorage("db.json");
 }
 
+const db = low(ProdOrDevDatabase);
+db._.mixin(lodashId);
+
+db.defaults({
+  products: [],
+  version: 0,
+}).write();
+
+const current_version = db.get("version").value();
+const update_if_success = (migration_version) =>
+  db.set("version", migration_version).write();
+Migration_v1.apply(db, current_version, update_if_success);
+
 export default class DbFactory {
   static dbAdapter() {
-    const db = low(ProdOrDevDatabase);
-
-    db._.mixin(lodashId);
-
-    db.defaults({ products: DbFactory.initialProductsBeta() }).write();
-
     return db;
   }
 
   static getNewId() {
     return shortid.generate();
-  }
-
-  static initialProductsBeta() {
-    //TODO: initial load sync from server
-    return [
-      { id: 1, description: "Naturágua".toUpperCase(), cash: 11.0, card: 11.5 },
-      { id: 2, description: "Indaiá".toUpperCase(), cash: 11.0, card: 11.5 },
-      { id: 3, description: "Neblina".toUpperCase(), cash: 10.0, card: 10.5 },
-      { id: 4, description: "Pacoty".toUpperCase(), cash: 9.0, card: 9.5 },
-      { id: 5, description: "Clareza".toUpperCase(), cash: 5.0, card: 5.5 },
-      { id: 6, description: "Fortágua".toUpperCase(), cash: 5.0, card: 5.5 },
-      {
-        id: 7,
-        description: "Serra Grande".toUpperCase(),
-        cash: 10.0,
-        card: 10.5,
-      },
-      { id: 8, description: "Acácia".toUpperCase(), cash: 10.0, card: 10.5 },
-    ];
   }
 }
