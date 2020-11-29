@@ -1,7 +1,12 @@
 import app from "firebase/app";
 import "firebase/auth";
 import "firebase/database";
-import { ORDERS, CLIENT_LAST_ORDERS, USERS } from "../../constants/entities";
+import {
+  ORDERS,
+  CLIENT_LAST_ORDERS,
+  USERS,
+  PRODUCTS,
+} from "../../constants/entities";
 
 const config = {
   apiKey: process.env.REACT_APP_API_KEY,
@@ -36,11 +41,12 @@ class Firebase {
   user = (uid) => this.db.ref(`${USERS}/${uid}`);
   users = () => this.db.ref(USERS);
 
-  // *** Order
   order = (uid) => this.db.ref(`${ORDERS}/${uid}`);
   orders = () => this.db.ref(ORDERS);
 
-  // *** Order
+  product = (uid) => this.db.ref(`${PRODUCTS}/${uid}`);
+  products = () => this.db.ref(PRODUCTS);
+
   lastOrder = (uid) => this.db.ref(`${CLIENT_LAST_ORDERS}/${uid}`);
   lastOrders = () => this.db.ref(CLIENT_LAST_ORDERS);
 

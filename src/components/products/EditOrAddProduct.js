@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import Grid from "@material-ui/core/Grid";
 import TextField from "@material-ui/core/TextField";
 import InputAdornment from "@material-ui/core/InputAdornment";
@@ -6,10 +6,16 @@ import { Button } from "@material-ui/core";
 import ProductRepository from "../../repository/ProductRepository";
 import { NotificationManager } from "react-notifications";
 import SaveIcon from "@material-ui/icons/Save";
+import { withFirebase } from "../Firebase";
+import { AuthUserContext } from "../Session";
 
-export default function EditOrAddProduct(props) {
+function EditOrAddProduct(props) {
   const product_id = props.match.params.id;
   const [product, setProduct] = useState({});
+
+  const authUser = useContext(AuthUserContext);
+  ProductRepository.setOrderRepositoryFirebase(props.firebase, authUser);
+
   useEffect(() => {
     setProduct(ProductRepository.getById(product_id));
   }, [product_id]);
@@ -97,3 +103,5 @@ export default function EditOrAddProduct(props) {
     </Grid>
   );
 }
+
+export default withFirebase(EditOrAddProduct);
