@@ -6,9 +6,9 @@ class OrderRepository {
     this.db = db;
     this.firebase = firebase;
     this.authUser = authUser;
-    this.order_collection = db.defaults({ orders: [] }).get(ORDERS);
+    this.order_collection = db.defaults({ [ORDERS]: [] }).get(ORDERS);
     this.client_last_order_collection = db
-      .defaults({ client_last_orders: [] })
+      .defaults({ [CLIENT_LAST_ORDERS]: [] })
       .get(CLIENT_LAST_ORDERS);
   }
 
