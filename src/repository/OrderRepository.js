@@ -67,7 +67,7 @@ class OrderRepository {
       return;
     }
 
-    entity.uid = this.authUser.uid;
+    entity.user_id = this.authUser.uid;
     entity.last_sync = date_last_sync;
 
     this.firebase
@@ -79,7 +79,7 @@ class OrderRepository {
         }
       })
       .catch(() => {
-        delete entity.uid;
+        delete entity.user_id;
         delete entity.last_sync;
       });
   }
@@ -136,7 +136,7 @@ class OrderRepository {
       orderLocal[field] = current_date;
       orderLocal.updated = current_date;
 
-      if (orderLocal.uid) {
+      if (orderLocal.last_sync) {
         this.firebase
           .order(orderId)
           .update({
@@ -144,12 +144,12 @@ class OrderRepository {
             last_sync: current_date,
             updated: current_date,
             status: status,
-            uid: this.authUser.uid,
+            user_id: this.authUser.uid,
           })
           .then(() => {
             buildUpdateStatus = buildUpdateStatus
               .set("last_sync", current_date)
-              .set("uid", this.authUser.uid);
+              .set("user_id", this.authUser.uid);
             buildUpdateStatus.write();
           });
       } else {

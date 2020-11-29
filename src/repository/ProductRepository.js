@@ -28,7 +28,7 @@ class ProductRepository {
       return;
     }
 
-    entity.uid = this.authUser.uid;
+    entity.user_id = this.authUser.uid;
     entity.last_sync = date_last_sync;
 
     this.firebase
@@ -40,7 +40,7 @@ class ProductRepository {
         }
       })
       .catch(() => {
-        delete entity.uid;
+        delete entity.user_id;
         delete entity.last_sync;
       });
   }
@@ -72,6 +72,10 @@ class ProductRepository {
 
   delete(productId) {
     this.product_collection.remove({ id: productId }).write();
+
+    if (this.authUser) {
+      this.firebase.product(productId).set(null);
+    }
   }
 }
 
