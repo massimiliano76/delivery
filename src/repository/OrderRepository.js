@@ -1,5 +1,5 @@
 import DbFactory from "./DbFactory";
-import { ORDERS, CLIENT_LAST_ORDERS } from "../components/Firebase/firebase";
+import { ORDERS, CLIENT_LAST_ORDERS } from "../constants/entities";
 
 class OrderRepository {
   constructor(db = DbFactory.dbAdapter(), firebase, authUser) {
@@ -64,7 +64,7 @@ class OrderRepository {
 
   _saveEntityOnFireBase(ref, entity, date_last_sync, successCallBack) {
     if (!this.authUser) {
-      return entity;
+      return;
     }
 
     entity.uid = this.authUser.uid;
@@ -82,8 +82,6 @@ class OrderRepository {
         delete entity.uid;
         delete entity.last_sync;
       });
-
-    return entity;
   }
 
   _updateLastOrder(lastOrder) {

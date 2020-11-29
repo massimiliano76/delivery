@@ -1,10 +1,7 @@
 import app from "firebase/app";
 import "firebase/auth";
 import "firebase/database";
-
-export const USERS = "users";
-export const ORDERS = "orders";
-export const CLIENT_LAST_ORDERS = "client_last_orders";
+import { ORDERS, CLIENT_LAST_ORDERS, USERS } from "../../constants/entities";
 
 const config = {
   apiKey: process.env.REACT_APP_API_KEY,
@@ -42,6 +39,10 @@ class Firebase {
   // *** Order
   order = (uid) => this.db.ref(`${ORDERS}/${uid}`);
   orders = () => this.db.ref(ORDERS);
+
+  // *** Order
+  lastOrder = (uid) => this.db.ref(`${CLIENT_LAST_ORDERS}/${uid}`);
+  lastOrders = () => this.db.ref(CLIENT_LAST_ORDERS);
 
   // generic ref usage
   generic = (refs, uid) => this.db.ref(`${refs}/${uid}`);
