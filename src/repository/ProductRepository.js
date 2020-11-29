@@ -71,10 +71,18 @@ class ProductRepository {
   }
 
   delete(productId) {
-    this.product_collection.remove({ id: productId }).write();
-
-    if (this.authUser) {
-      this.firebase.product(productId).set(null);
+    const product = this.product_collection.getById(productId).value();
+    if (product.last_sync) {
+      if (this.authUser) {
+        this.firebase
+          .product(productId)
+          .set(null)
+          .then(() =>
+            this.product_collection.remove({ id: productId }).write()
+          );
+      }
+    } else {
+      this.product_collection.remove({ id: productId }).write();
     }
   }
 }
