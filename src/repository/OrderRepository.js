@@ -153,11 +153,12 @@ class OrderRepository {
             buildUpdateStatus.write();
           });
       } else {
-        const orderSync = this._saveNewOrderOnFireBase(
+        this._saveEntityOnFireBase(
+          ORDERS,
           orderLocal,
-          current_date
+          current_date,
+          (newEntity) => this._updateOrder(newEntity)
         );
-        orderByIdBuilder.assign(orderSync).write();
       }
     }
   }
