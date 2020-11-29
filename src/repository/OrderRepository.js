@@ -1,14 +1,15 @@
 import DbFactory from "./DbFactory";
+import { ORDERS, CLIENT_LAST_ORDERS } from "../components/Firebase/firebase";
 
 class OrderRepository {
   constructor(db = DbFactory.dbAdapter(), firebase, authUser) {
     this.db = db;
     this.firebase = firebase;
     this.authUser = authUser;
-    this.order_collection = db.defaults({ orders: [] }).get("orders");
+    this.order_collection = db.defaults({ orders: [] }).get(ORDERS);
     this.client_last_order_collection = db
       .defaults({ client_last_orders: [] })
-      .get("client_last_orders");
+      .get(CLIENT_LAST_ORDERS);
   }
 
   setOrderRepositoryFirebase(firebase, authUser) {
@@ -61,23 +62,35 @@ class OrderRepository {
     return orders;
   }
 
-  _saveNewOrderOnFireBase(order, date_last_sync) {
+  _saveEntityOnFireBase(ref, entity, date_last_sync, successCallBack) {
     if (!this.authUser) {
-      return order;
+      return entity;
     }
 
-    order.uid = this.authUser.uid;
-    order.last_sync = date_last_sync;
+    entity.uid = this.authUser.uid;
+    entity.last_sync = date_last_sync;
 
     this.firebase
-      .order(order.id)
-      .set(order)
+      .generic(ref, entity.id)
+      .set(entity)
+      .then(() => {
+        if (successCallBack) {
+          successCallBack(entity);
+        }
+      })
       .catch(() => {
-        delete order.uid;
-        delete order.last_sync;
+        delete entity.uid;
+        delete entity.last_sync;
       });
 
-    return order;
+    return entity;
+  }
+
+  _updateLastOrder(lastOrder) {
+    this.client_last_order_collection
+      .getById(lastOrder.id)
+      .assign(lastOrder)
+      .write();
   }
 
   save(order) {
@@ -85,11 +98,19 @@ class OrderRepository {
 
     order.id = DbFactory.getNewId();
     order.created = new Date().toJSON();
-
-    order = this._saveNewOrderOnFireBase(order, order.created);
-
+    // refactor to avoid return object and use callback
+    order = this._saveEntityOnFireBase(ORDERS, order, order.created);
     this.order_collection.push(order).write();
-    this._saveClientLastOrder(order);
+
+    const client_last_orders = this._saveClientLastOrder(order);
+    client_last_orders.forEach((last_order_index) => {
+      this._saveEntityOnFireBase(
+        CLIENT_LAST_ORDERS,
+        last_order_index,
+        order.created,
+        (newEntity) => this._updateLastOrder(newEntity)
+      );
+    });
 
     return order.id;
   }
@@ -204,7 +225,7 @@ class OrderRepository {
       address: order.address,
       phonenumber: order.phonenumber,
       complement: order.complement,
-      created: new Date().toJSON(),
+      created: order.created,
     };
     this.client_last_order_collection.push(newLastOrder).write();
     return [newLastOrder];

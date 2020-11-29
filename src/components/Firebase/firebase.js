@@ -2,6 +2,10 @@ import app from "firebase/app";
 import "firebase/auth";
 import "firebase/database";
 
+export const USERS = "users";
+export const ORDERS = "orders";
+export const CLIENT_LAST_ORDERS = "client_last_orders";
+
 const config = {
   apiKey: process.env.REACT_APP_API_KEY,
   authDomain: process.env.REACT_APP_AUTH_DOMAIN,
@@ -32,12 +36,15 @@ class Firebase {
     this.auth.currentUser.updatePassword(password);
 
   // *** User API ***
-  user = (uid) => this.db.ref(`users/${uid}`);
-  users = () => this.db.ref("users");
+  user = (uid) => this.db.ref(`${USERS}/${uid}`);
+  users = () => this.db.ref(USERS);
 
   // *** Order
-  order = (uid) => this.db.ref(`orders/${uid}`);
-  orders = () => this.db.ref("orders");
+  order = (uid) => this.db.ref(`${ORDERS}/${uid}`);
+  orders = () => this.db.ref(ORDERS);
+
+  // generic ref usage
+  generic = (refs, uid) => this.db.ref(`${refs}/${uid}`);
 }
 
 export default Firebase;
