@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import Checkout from "./Checkout";
 import "react-notifications/lib/notifications.css";
 import clsx from "clsx";
@@ -83,7 +83,12 @@ function CheckoutHome({ firebase }) {
   const classes = useStyles();
   const open = true;
   const authUser = useContext(AuthUserContext);
-  OrderRepository.setOrderRepositoryFirebase(firebase, authUser);
+
+  useEffect(() => {
+    OrderRepository.setOrderRepositoryFirebase(firebase, authUser);
+    OrderRepository.syncOrders();
+    OrderRepository.syncClientLastOrders();
+  }, [firebase, authUser]);
 
   const connectedSymbol = () => {
     return (

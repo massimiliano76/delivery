@@ -1,6 +1,9 @@
 import DbFactory from "./DbFactory";
 import { ORDERS, CLIENT_LAST_ORDERS } from "../constants/entities";
 
+const maxDate = new Date(8640000000000000);
+const minDate = new Date(-8640000000000000);
+
 class OrderRepository {
   constructor(db = DbFactory.dbAdapter(), firebase, authUser) {
     this.db = db;
@@ -95,25 +98,35 @@ class OrderRepository {
     this.order_collection.getById(order.id).assign(order).write();
   }
 
-  save(order) {
-    if (!order) return;
-
-    order.id = DbFactory.getNewId();
-    order.created = new Date().toJSON();
-    this.order_collection.push(order).write();
-
-    this._saveEntityOnFireBase(ORDERS, order, order.created, (newEntity) =>
+  _sendAndUpadateOrder(order, date_sync) {
+    this._saveEntityOnFireBase(ORDERS, order, date_sync, (newEntity) =>
       this._updateOrder(newEntity)
     );
+  }
+
+  _sendAndUpadateClientLastOrder(client_last_order, date_sync) {
+    this._saveEntityOnFireBase(
+      CLIENT_LAST_ORDERS,
+      client_last_order,
+      date_sync,
+      (newEntity) => this._updateLastOrder(newEntity)
+    );
+  }
+
+  save(order) {
+    if (!order) return;
+    const current_date = new Date().toJSON();
+
+    order.id = DbFactory.getNewId();
+    order.created = current_date;
+    order.updated = current_date;
+    this.order_collection.push(order).write();
+
+    this._sendAndUpadateOrder(order, current_date);
 
     const client_last_orders = this._saveClientLastOrder(order);
     client_last_orders.forEach((last_order_index) => {
-      this._saveEntityOnFireBase(
-        CLIENT_LAST_ORDERS,
-        last_order_index,
-        order.created,
-        (newEntity) => this._updateLastOrder(newEntity)
-      );
+      this._sendAndUpadateClientLastOrder(last_order_index, current_date);
     });
 
     return order.id;
@@ -231,6 +244,7 @@ class OrderRepository {
       phonenumber: order.phonenumber,
       complement: order.complement,
       created: order.created,
+      updated: order.created,
     };
     this.client_last_order_collection.push(newLastOrder).write();
     return [newLastOrder];
@@ -276,6 +290,34 @@ class OrderRepository {
         return order.status === "SHIPPED";
       })
       .value().length;
+  }
+
+  //TODO: extract
+  syncOrders() {
+    const current_date = new Date().toJSON();
+
+    this.order_collection
+      .filter((order) => {
+        return new Date(order.updated) > new Date(order.last_sync || minDate);
+      })
+      .value()
+      .forEach((order) => this._sendAndUpadateOrder(order, current_date));
+  }
+
+  syncClientLastOrders() {
+    const current_date = new Date().toJSON();
+
+    this.client_last_order_collection
+      .filter((client_last_order) => {
+        return (
+          new Date(client_last_order.updated) >
+          new Date(client_last_order.last_sync || minDate)
+        );
+      })
+      .value()
+      .forEach((client_last_order) =>
+        this._sendAndUpadateClientLastOrder(client_last_order, current_date)
+      );
   }
 }
 
