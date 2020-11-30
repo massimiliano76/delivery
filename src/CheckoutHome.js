@@ -9,6 +9,7 @@ import NetworkLockedIcon from "@material-ui/icons/NetworkLocked";
 import { AuthUserContext } from "./components/Session";
 import { Box } from "@material-ui/core";
 import OrderRepository from "./repository/OrderRepository";
+import ProductRepository from "./repository/ProductRepository";
 
 const drawerWidth = 380;
 
@@ -85,7 +86,10 @@ function CheckoutHome({ firebase }) {
   const authUser = useContext(AuthUserContext);
 
   useEffect(() => {
+    ProductRepository.setOrderRepositoryFirebase(firebase, authUser);
     OrderRepository.setOrderRepositoryFirebase(firebase, authUser);
+
+    ProductRepository.syncProducts();
     OrderRepository.syncOrders();
     OrderRepository.syncClientLastOrders();
   }, [firebase, authUser]);

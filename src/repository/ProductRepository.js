@@ -1,6 +1,8 @@
 import DbFactory from "./DbFactory";
 import { PRODUCTS } from "../constants/entities";
 
+const minDate = new Date(-8640000000000000);
+
 class ProductRepository {
   constructor(db = DbFactory.dbAdapter(), firebase, authUser) {
     this.db = db;
@@ -49,6 +51,12 @@ class ProductRepository {
     this.product_collection.getById(product.id).assign(product).write();
   }
 
+  _sendAndUpadateProduct(product, date_sync) {
+    this._saveProductOnFireBase(product, date_sync, (newProduct) =>
+      this._updateProduct(newProduct)
+    );
+  }
+
   save(product) {
     if (!product) return;
     const current_date = new Date().toJSON();
@@ -63,9 +71,7 @@ class ProductRepository {
       this.product_collection.push(product).write();
     }
 
-    this._saveProductOnFireBase(product, current_date, (newProduct) =>
-      this._updateProduct(newProduct)
-    );
+    this._sendAndUpadateProduct(product, current_date);
 
     return product.id;
   }
@@ -85,6 +91,19 @@ class ProductRepository {
     } else {
       this.product_collection.remove({ id: productId }).write();
     }
+  }
+
+  syncProducts() {
+    const current_date = new Date().toJSON();
+
+    this.product_collection
+      .filter((product) => {
+        return (
+          new Date(product.updated) > new Date(product.last_sync || minDate)
+        );
+      })
+      .value()
+      .forEach((product) => this._sendAndUpadateProduct(product, current_date));
   }
 }
 

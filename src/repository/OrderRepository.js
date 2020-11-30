@@ -1,7 +1,6 @@
 import DbFactory from "./DbFactory";
 import { ORDERS, CLIENT_LAST_ORDERS } from "../constants/entities";
 
-const maxDate = new Date(8640000000000000);
 const minDate = new Date(-8640000000000000);
 
 class OrderRepository {

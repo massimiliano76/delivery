@@ -30,10 +30,15 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function Products(props) {
+  const firebase = props.firebase;
   const classes = useStyles();
   const [products, setProducts] = useState([]);
   const authUser = useContext(AuthUserContext);
-  ProductRepository.setOrderRepositoryFirebase(props.firebase, authUser);
+
+  useEffect(() => {
+    ProductRepository.setOrderRepositoryFirebase(firebase, authUser);
+    ProductRepository.syncProducts();
+  }, [firebase, authUser]);
 
   useEffect(() => {
     setProducts(ProductRepository.all());
